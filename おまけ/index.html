@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="test.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-storage.js"></script>
+</head>
+
+<body>
+    <input type="file" id="file">
+    <progress id="progress_bar" value="0" max="100"></progress>
+
+
+    <script type="module">
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDSXWJdkrYu5Q8QTXtt49x22eVuvqd81GM",
+            authDomain: "gs23-dfbb9.firebaseapp.com",
+            databaseURL: "https://gs23-dfbb9-default-rtdb.firebaseio.com",
+            projectId: "gs23-dfbb9",
+            storageBucket: "gs23-dfbb9.appspot.com",
+            messagingSenderId: "19478562405",
+            appId: "1:19478562405:web:88fd5248c3c4945733a88c"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        $("#down").on("click", function () {
+            //ファイルの取得
+            const file = document.getElementById("fileButton").files[0];
+            //ファイルの参照
+            var storageRef = firebase.storage().ref();
+            const DownloadTask = storageRef.child("image/" + file.name);
+
+            //画像ファイルのダウンロード
+            DownloadTask.getDownloadURL().then((downloadURL) => {
+                document.getElementById("image").src = downloadURL;
+            });
+        });
+    </script>
+    <script>
+        document.getElementById('file').addEventListener('change', (event) => {  //addEventListener('change', function(){});と同じ。引数'change'は「変化があった時」の意味。
+            const file = event.target.files[0];  //evemt.targetはクリックした要素のこと。ここでは<input type="file" id="file">。
+            const storageRef = firebase.storage().ref('images/' + file.name); //firebase.storage.ref(どこにどの名前のファイルを保存するかの指定)
+            
+            //指定した場所に、putする
+            storageRef.put(file) 
+        
+            //指定した場所にputしたときにon()関数動く。プログレスバーの表示。
+            storageRef.put(file).on('state_changed', (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log(progress);
+                const progressBar = document.getElementById('progress_bar');
+                progressBar.value = progress;
+            });
+        
+            storageRef.getDownloadURL().then(function(url){
+                const image = document.getElementById('image');
+                console.log(url);
+                image.src = url
+            });
+            
+        });
+        </script>
+</body>
+
+</html>
